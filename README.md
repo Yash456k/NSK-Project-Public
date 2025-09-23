@@ -15,12 +15,6 @@ The platform is live and currently in use. You can view the production applicati
 
 ---
 
-## 🎥 Project Showcase
-
-The following GIF demonstrates the core user flow: selecting a sport, choosing a time slot, the temporary 5-minute reservation lock, and completing the booking.
-
-*(Replace the link below with the actual link to your GIF)*
-![NSK Booking Flow GIF](https://i.imgur.com/your-demo-link.gif)
 
 ## Table of Contents
 * [About The Project](#about-the-project)
