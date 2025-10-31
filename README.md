@@ -1,4 +1,4 @@
-# NSK - Full-Stack Multi-Tenant Booking System (THIS FILE IS STILL IN PROGRESS)
+# NSK - Full-Stack Multi-Tenant Booking System (THIS README FILE IS STILL IN PROGRESS)
 
 ![Project Status: Live](https://img.shields.io/badge/status-live%20%26%20in%20production-brightgreen)
 
@@ -7,11 +7,6 @@
 
 > **Note:** This repository serves as a public showcase for the project. Due to its proprietary nature and commercial use, the source code is maintained in a private repository. This README provides a detailed overview of the project's architecture, features, and technical implementation.
 
-## 🚀 Live Demo
-
-The platform is live and currently in use. You can view the production application here:
-
-### **[https://www.nashiksportsklub.com](https://www.nashiksportsklub.com)**
 
 ---
 
