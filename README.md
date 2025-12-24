@@ -17,6 +17,7 @@
 * [Technical Architecture & Highlights](#technical-architecture--highlights)
   * [Race Condition & Concurrency Management](#race-condition--concurrency-management)
   * [Data Integrity with Atomic Transactions](#data-integrity-with-atomic-transactions)
+  * [Stress Testing & Integrity Verification](#stress-testing-and-integrity-verification)
   * [Scalable Multi-Tenant Design](#scalable-multi-tenant-design)
   * [Secure Authentication Flow](#secure-authentication-flow)
   * [Production Deployment & CI/CD](#production-deployment--cicd)
@@ -52,6 +53,20 @@ To guarantee **100% booking integrity** and eliminate the risk of double-booking
 ### Data Integrity with Atomic Transactions
 
 For features like bulk bookings where a user reserves multiple slots simultaneously, data consistency is critical. The entire operation must succeed or fail as a single unit. This is achieved using **MongoDB Sessions**, which wrap all related database operations (creating multiple booking records, updating user profiles, etc.) into a single **atomic transaction**. If any step fails, the entire transaction is rolled back, leaving the database in a consistent state.
+
+### Stress Testing and Integrity Verification
+
+To ensure **0% double-bookings**, I simulated a "ticketmaster-style" rush where **500 concurrent users** attempted to book the exact same slot instantly.
+
+**Test Results:**
+*   **Success:** Exactly **1 booking** committed to the database.
+*   **Blocked:** **472 requests** were correctly rejected with `409 Conflict`.
+*   **Dropped:** ~27 requests timed out due to local connection pool limits (hardware constraints), protecting the database from crashing.
+
+**Verdict:** The system maintained **100% Data Integrity** under extreme load.
+
+![k6 Stress Test Results](<img width="1412" height="744" alt="image" src="https://github.com/user-attachments/assets/c0bc6ed0-deea-42ec-bc57-882c974d7e65" />
+)
 
 ### Scalable Multi-Tenant Design
 
