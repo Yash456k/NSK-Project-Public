@@ -26,7 +26,9 @@
 
 ## About The Project
 
-NSK is a production-grade, full-stack booking platform built from the ground up to manage sports facilities for multiple locations. Designed to handle significant traffic and revenue, the system provides a seamless experience for users while offering powerful administrative tools for staff. The platform is projected to manage over **₹4 lakh in monthly revenue**, highlighting its robustness and commercial viability.
+NSK is a production-grade, full-stack booking platform built from the ground up to manage sports facilities for multiple locations. Designed to handle significant traffic and revenue, the system provides a seamless experience for users while offering powerful administrative tools for staff. 
+
+<!-- The platform is projected to manage over **₹4 lakh in monthly revenue**, highlighting its robustness and commercial viability. -->
 
 ## Key Features
 
@@ -65,8 +67,7 @@ To ensure **0% double-bookings**, I simulated a "ticketmaster-style" rush where 
 
 **Verdict:** The system maintained **100% Data Integrity** under extreme load.
 
-![k6 Stress Test Results](<img width="1412" height="744" alt="image" src="https://github.com/user-attachments/assets/c0bc6ed0-deea-42ec-bc57-882c974d7e65" />
-)
+<img width="1412" height="744" alt="image" src="https://github.com/user-attachments/assets/c0bc6ed0-deea-42ec-bc57-882c974d7e65" />
 
 ### Scalable Multi-Tenant Design
 
