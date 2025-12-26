@@ -1,4 +1,4 @@
-# NSK - Full-Stack Multi-Tenant Booking System (THIS README FILE IS STILL IN PROGRESS)
+# NSK - Full-Stack Multi-Tenant Booking System
 
 ![Project Status: Live](https://img.shields.io/badge/status-live%20%26%20in%20production-brightgreen)
 
