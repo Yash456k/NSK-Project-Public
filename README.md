@@ -1,108 +1,53 @@
-# NSK - Full-Stack Multi-Tenant Booking System
+<div align="center">
 
-![Project Status: Live](https://img.shields.io/badge/status-live%20%26%20in%20production-brightgreen)
+<a href="https://www.nashiksportsklub.com"><img src="docs/home.png" alt="The Nashik Sports Klub home page: &quot;Elevate Your Game Today.&quot; with buttons to book a court or explore features" width="100%"></a>
 
+<h1>Nashik Sports Klub</h1>
 
----
+<p>The booking site for a sports club in Nashik. Players book pickleball, cricket, and padel courts online, and the club's staff run walk-ins, courts, and customers from the same app.</p>
 
-> **Note:** This repository serves as a public showcase for the project. Due to its proprietary nature and commercial use, the source code is maintained in a private repository. This README provides a detailed overview of the project's architecture, features, and technical implementation.
+[![React](https://img.shields.io/badge/React-19-20232A?style=flat-square&logo=react)](#built-with)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)](#built-with)
+[![Express](https://img.shields.io/badge/Express-5-000000?style=flat-square&logo=express&logoColor=white)](#built-with)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)](#built-with)
 
+</div>
 
----
+<br>
 
+[nashiksportsklub.com](https://www.nashiksportsklub.com) is live and takes real bookings for the club's three venues: four pickleball courts, two cricket turfs, and a padel court. The code lives in a private repository because it runs a paying business, so this page shows what it does and how the interesting parts work.
 
-## Table of Contents
-* [About The Project](#about-the-project)
-* [Key Features](#key-features)
-* [Technical Architecture & Highlights](#technical-architecture--highlights)
-  * [Race Condition & Concurrency Management](#race-condition--concurrency-management)
-  * [Data Integrity with Atomic Transactions](#data-integrity-with-atomic-transactions)
-  * [Stress Testing & Integrity Verification](#stress-testing-and-integrity-verification)
-  * [Scalable Multi-Tenant Design](#scalable-multi-tenant-design)
-  * [Secure Authentication Flow](#secure-authentication-flow)
-  * [Production Deployment & CI/CD](#production-deployment--cicd)
-* [Technology Stack](#technology-stack)
-* [Contact](#contact)
+## Booking a court
 
-## About The Project
+Players sign in with their phone number, pick a venue and a court, and choose from a grid of open slots over the next few days. Taken slots are greyed out, and each open one shows its price. Selecting slots brings up the booking fee, which is paid online through Razorpay, and the rest is paid at the venue.
 
-NSK is a production-grade, full-stack booking platform built from the ground up to manage sports facilities for multiple locations. Designed to handle significant traffic and revenue, the system provides a seamless experience for users while offering powerful administrative tools for staff. 
+![Choosing a slot on Court 1 at NSK Pickleball: booked evening slots are greyed out, one open slot is selected, and a bar at the bottom shows the booking fee and a Checkout button](docs/booking.png)
 
-<!-- The platform is projected to manage over **₹4 lakh in monthly revenue**, highlighting its robustness and commercial viability. -->
+## Running the club
 
-## Key Features
+Admins and staff each get a dashboard for their venue. The staff view lays out a whole week for each court, so a phone call or a walk-in can be booked in a couple of clicks. Admins also see every booking with the customer's contact details, recent customers, a past-week report, and revenue analytics, and they can change court prices and hours, give staff access, and block numbers that shouldn't be booking.
 
-- **Multi-Tenant Architecture:** Securely serves multiple independent sports clubs/locations from a single application instance, with complete data isolation.
-- **Role-Based Access Control (RBAC):** Granular permissions for Super Admins, Location Admins, and Staff, ensuring users only access relevant data and functionality.
-- **Real-Time Slot Booking:** Users can view available slots and book them in real-time without conflicts.
-- **Race-Condition Proof:** A sophisticated system prevents double-bookings even under high concurrency.
-- **Secure OTP Authentication:** Passwordless, mobile number-based login flow for a smooth and secure user experience.
-- **Automated Deployments:** A complete CI/CD pipeline ensures rapid and reliable updates to the production environment.
-- **Admin & Staff Dashboards:** Dedicated interfaces for managing courts, staff, bookings, and viewing location-specific analytics.
+![The staff booking grid for one court: a week of dates across the top, hourly slots down the side, with booked slots greyed out between open ones](docs/staff.png)
 
-## Technical Architecture & Highlights
+The screenshots come from a local copy running on made-up customers, so no real bookings are shown.
 
-This section details the key engineering solutions that power the NSK platform.
+## Two people, one slot
 
-### Race Condition & Concurrency Management
+The hard part of a booking site is the last open slot. When a player checks out, the server opens a MongoDB transaction, checks that nothing overlaps the chosen slots, and places a hold on each one before creating the payment order. A hold lasts three minutes, and a scheduled Agenda job clears it if the payment never finishes. A unique index on court and start time also stops two holds on the same slot inside the database itself, and each player can only have one checkout in progress at a time.
 
-To guarantee **100% booking integrity** and eliminate the risk of double-bookings, a multi-layered solution was engineered:
+To check it, I sent 500 simulated users at the same slot at once. Exactly one booking went through, 472 requests were turned away with `409 Conflict`, and about 27 timed out against my machine's connection pool limit.
 
-1.  **Temporary Reservation Lock:** When a user selects a slot, a temporary reservation is created in the database with a 5-minute TTL (Time-To-Live). This slot is immediately marked as unavailable to other users.
-2.  **Real-Time Disconnect Detection:** **WebSockets** are used to maintain a persistent connection with the client during the booking process. If the user closes the tab or loses connection, the server detects the disconnect instantly and releases the temporary lock, making the slot available again.
-3.  **Scheduled Job Fail-Safe:** As a final layer of defense, a scheduled job runs using **Agenda.js** to periodically scan for and clear any expired temporary reservations that may not have been cleared by other mechanisms, ensuring no slot remains locked indefinitely.
+<img width="1412" height="744" alt="Load test results: 500 concurrent booking attempts on one slot, with one success and the rest rejected" src="https://github.com/user-attachments/assets/c0bc6ed0-deea-42ec-bc57-882c974d7e65" />
 
-### Data Integrity with Atomic Transactions
+## Built with
 
-For features like bulk bookings where a user reserves multiple slots simultaneously, data consistency is critical. The entire operation must succeed or fail as a single unit. This is achieved using **MongoDB Sessions**, which wrap all related database operations (creating multiple booking records, updating user profiles, etc.) into a single **atomic transaction**. If any step fails, the entire transaction is rolled back, leaving the database in a consistent state.
-
-### Stress Testing and Integrity Verification
-
-To ensure **0% double-bookings**, I simulated a "ticketmaster-style" rush where **500 concurrent users** attempted to book the exact same slot instantly.
-
-**Test Results:**
-*   **Success:** Exactly **1 booking** committed to the database.
-*   **Blocked:** **472 requests** were correctly rejected with `409 Conflict`.
-*   **Dropped:** ~27 requests timed out due to local connection pool limits (hardware constraints), protecting the database from crashing.
-
-**Verdict:** The system maintained **100% Data Integrity** under extreme load.
-
-<img width="1412" height="744" alt="image" src="https://github.com/user-attachments/assets/c0bc6ed0-deea-42ec-bc57-882c974d7e65" />
-
-### Scalable Multi-Tenant Design
-
-The application is built on a multi-tenant architecture to serve different business locations from a single codebase and database.
-- **Data Isolation:** Every relevant document in the database (e.g., `bookings`, `courts`, `users`) includes a `locationId` field. All database queries are scoped to the authenticated admin's specific `locationId`, ensuring they can only access and manage their own data.
-- **Centralized Super Admin:** A super admin role exists outside this structure, with the ability to manage locations and oversee the entire system.
-
-### Secure Authentication Flow
-
-Security was a top priority. The authentication flow is designed to be both user-friendly and highly secure:
-1.  **OTP Verification:** Users register and log in using their phone number, receiving an OTP via the **MSG91** service.
-2.  **JWT Generation:** Upon successful OTP verification, a secure **JSON Web Token (JWT)** is generated.
-3.  **HttpOnly Cookie Storage:** The JWT is stored in an **HttpOnly, SameSite=None, Secure cookie**. This is the critical step that prevents Cross-Site Scripting (XSS) attacks, as client-side JavaScript cannot access the token.
-
-### Production Deployment & CI/CD
-
-The entire deployment lifecycle is automated for efficiency and reliability:
-- **Hosting:** The Node.js backend is deployed on an **AWS EC2** instance.
-- **Reverse Proxy:** **Nginx** is configured as a reverse proxy to manage incoming traffic. It is responsible for **SSL termination** (enabling HTTPS) and proxying requests to the correct port for the Node.js application. It also handles the secure WebSocket protocol (`wss://`).
-- **Automation:** A **CI/CD pipeline** is set up using **GitHub Actions**. On every `git push` to the main branch of the private repository, the pipeline automatically:
-    1.  Connects to the EC2 instance via SSH.
-    2.  Pulls the latest code.
-    3.  Installs dependencies (`npm install`).
-    4.  Restarts the application gracefully using **PM2**, ensuring zero downtime.
-
-## Technology Stack
-
-| Category              | Technologies                                                                                             |
-| --------------------- | -------------------------------------------------------------------------------------------------------- |
-| **Frontend** | `React`, `React Router`, `Axios`, `Tailwind CSS`, `Socket.IO Client`                                       |
-| **Backend** | `Node.js`, `Express.js`, `Mongoose`, `Socket.IO`, `Agenda.js`                                              |
-| **Database** | `MongoDB`                                                                                                |
-| **DevOps & Deployment** | `AWS EC2`, `Nginx`, `PM2`, `GitHub Actions (CI/CD)`, `SSL (Let's Encrypt)`                                 |
-| **APIs & Services** | `MSG91` (for OTP), `JWT` (for Authentication)                                                              |
+| Part | Tools |
+|---|---|
+| Frontend | React 19, TypeScript, Vite, TanStack Router and Query, Redux Toolkit, Tailwind CSS 4, shadcn/ui |
+| Backend | Node.js, Express 5, Mongoose, Agenda |
+| Database | MongoDB |
+| Payments and sign-in | Razorpay, phone verification through Phone.Email, JWTs in HttpOnly cookies |
 
 ## Contact
 
-Yash Khambhatta - [yash456k@gmail.com](mailto:yash456k@gmail.com)
+Yash Khambhatta, [yash456k@gmail.com](mailto:yash456k@gmail.com)
