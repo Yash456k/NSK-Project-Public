@@ -15,7 +15,7 @@
 
 <br>
 
-[nashiksportsklub.com](https://www.nashiksportsklub.com) is live and takes real bookings for the club's three venues: four pickleball courts, two cricket turfs, and a padel court. The code lives in a private repository because it runs a paying business, so this page shows what it does and how the interesting parts work.
+[nashiksportsklub.com](https://www.nashiksportsklub.com) is live and takes real bookings for the club's three venues: four pickleball courts, two cricket turfs, and a padel court. When 500 simulated users went for the same slot at once, exactly one booking went through ([how](#two-people-one-slot)). The code lives in a private repository because it runs a paying business, so this page shows what it does and how the interesting parts work.
 
 ## Booking a court
 
